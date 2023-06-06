@@ -1,5 +1,6 @@
 class ArticlesController < ApplicationController
-  before_action :set_article, only: %i[ show update destroy ]
+  before_action :set_article, only: %i[show update destroy]
+  before_action :authenticate_user!, only: %i[create update]
 
   # GET /articles
   def index
@@ -26,6 +27,8 @@ class ArticlesController < ApplicationController
 
   # PATCH/PUT /articles/1
   def update
+    return unless @article.user == current_user
+
     if @article.update(article_params)
       render json: @article
     else
@@ -35,17 +38,20 @@ class ArticlesController < ApplicationController
 
   # DELETE /articles/1
   def destroy
+    return unless @article.user == current_user
+
     @article.destroy
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_article
-      @article = Article.find(params[:id])
-    end
 
-    # Only allow a list of trusted parameters through.
-    def article_params
-      params.require(:article).permit(:title, :content)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_article
+    @article = Article.find(params[:id])
+  end
+
+  # Only allow a list of trusted parameters through.
+  def article_params
+    params.require(:article).permit(:title, :content, :user_id)
+  end
 end
